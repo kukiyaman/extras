@@ -1,0 +1,159 @@
+https://fedorahosted.org/gofer/wiki/CodeExamples
+
+yum install python-qpid  qpid-cpp-client-devel qpid-cpp-server-store gofer qpid-tools python-qmf python-gofer-qpid
+
+
+[root@server ~]# cat /usr/lib/gofer/plugins/myplugin.py
+from gofer.decorators import *
+from gofer.agent.plugin import Plugin
+import os
+import getpass
+# (optional) access to the plugin descriptor
+# which you can use to define custom sections/properties
+plugin = Plugin.find(__name__)
+cfg = plugin.cfg()
+print cfg
+
+class Dog:
+    @remote
+    def bark(self, words):
+        woof = cfg.dog.bark_noise
+        print '%s %s' % (woof, words)
+        print os.system("whoami")
+        return 'Yes %s.  I will bark because that is what dogs do.' % getpass.getuser()
+
+    @remote
+    def wag(self, n):
+        for i in range(0, n):
+            print 'wag'
+        return 'Yes master.  I will wag my tail because that is what dogs do.'
+
+
+[root@server ~]# cat /etc/gofer/plugins/myplugin.conf
+[main]
+enabled = 1
+
+[messaging]
+uuid=jortel
+url=amqp://localhost:5672
+
+[root@server ~]# cat /etc/gofer/plugins/builtin.conf
+[main]
+enabled=1
+
+[messaging]
+url=amqp://localhost:5672
+uuid=123
+
+[root@server ~]# lsof -i:5672
+COMMAND   PID  USER   FD   TYPE   DEVICE SIZE/OFF NODE NAME
+qpidd   16162 qpidd   19u  IPv4 12578516      0t0  TCP *:amqp (LISTEN)
+qpidd   16162 qpidd   20u  IPv4 12585024      0t0  TCP localhost.localdomain:amqp->localhost.localdomain:44914 (ESTABLISHED)
+qpidd   16162 qpidd   39u  IPv4 12585029      0t0  TCP localhost.localdomain:amqp->localhost.localdomain:44915 (ESTABLISHED)
+qpidd   16162 qpidd   40u  IPv4 12585034      0t0  TCP localhost.localdomain:amqp->localhost.localdomain:44916 (ESTABLISHED)
+qpidd   16162 qpidd   51u  IPv4 12585168      0t0  TCP localhost.localdomain:amqp->localhost.localdomain:44918 (ESTABLISHED)
+python  18136  root    9u  IPv4 12585023      0t0  TCP localhost.localdomain:44914->localhost.localdomain:amqp (ESTABLISHED)
+python  18136  root   12u  IPv4 12585028      0t0  TCP localhost.localdomain:44915->localhost.localdomain:amqp (ESTABLISHED)
+python  18136  root   15u  IPv4 12585033      0t0  TCP localhost.localdomain:44916->localhost.localdomain:amqp (ESTABLISHED)
+python  18136  root   18u  IPv4 12585167      0t0  TCP localhost.localdomain:44918->localhost.localdomain:amqp (ESTABLISHED)
+
+
+
+
+
+
+
+
+
+server -> server
+
+---------------------------------------------
+[root@server ~]# cat /usr/lib/gofer/plugins/myplugin.py
+from gofer.decorators import *
+from gofer.agent.plugin import Plugin
+import os
+import getpass
+import socket
+# (optional) access to the plugin descriptor
+# which you can use to define custom sections/properties
+plugin = Plugin.find(__name__)
+cfg = plugin.cfg()
+print cfg
+
+class Dog:
+    @remote
+    def bark(self, words):
+        woof = cfg.dog.bark_noise
+        print '%s %s' % (woof, words)
+        print os.system("whoami")
+        return 'Yes %s.  I will bark because that is what dogs do on %s.' % (getpass.getuser(), socket.gethostname())
+
+    @remote
+    def wag(self, n):
+        for i in range(0, n):
+            print 'wag'
+        return 'Yes master.  I will wag my tail because that is what dogs do.'
+[root@server ~]# cat /etc/gofer/plugins/myplugin.conf
+[main]
+enabled = 1
+
+[messaging]
+uuid=jortel
+url=amqp://server.example.com:5672
+[root@server ~]# cat /etc/gofer/plugins/builtin.conf
+[main]
+enabled=1
+
+[messaging]
+url=amqp://server.example.com:5672
+uuid=123
+----------------------------------------------
+
+
+on server -> client run code on server remotely
+[root@server ~]# cat /etc/gofer/plugins/myplugin.conf
+[main]
+enabled = 1
+
+[messaging]
+uuid=
+#uuid=jortel
+#url=amqp://server.example.com:5672
+
+[root@server ~]# cat /etc/gofer/plugins/builtin.conf
+[main]
+enabled=1
+
+[messaging]
+uuid=
+#url=amqp://server.example.com:5672
+#uuid=123
+
+[root@server ~]# cat /usr/lib/gofer/plugins/myplugin.py
+from gofer.decorators import *
+from gofer.agent.plugin import Plugin
+import os
+import getpass
+import socket
+# (optional) access to the plugin descriptor
+# which you can use to define custom sections/properties
+plugin = Plugin.find(__name__)
+cfg = plugin.cfg()
+print cfg
+
+class Dog:
+    @remote
+    def bark(self, words):
+        woof = cfg.dog.bark_noise
+        print '%s %s' % (woof, words)
+        print os.system("whoami")
+        return 'Yes %s.  I will bark because that is what dogs do on %s.' % (getpass.getuser(), socket.gethostname())
+
+    @remote
+    def wag(self, n):
+        for i in range(0, n):
+            print 'wag'
+        return 'Yes master.  I will wag my tail because that is what dogs do.'
+
+
+
